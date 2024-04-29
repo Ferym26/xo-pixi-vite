@@ -1,7 +1,10 @@
-export const isWin = field => {
+import { gameState } from './types.js'
+
+export const isWin = (instance, field) => {
 	const isAllElementsEquel = (arr, type, i) => {
-		if(arr.every(item => item !== '#' && item === arr[0])) {
+		if(arr.every(item => item !== '#' && item === arr[0]) && instance.state === gameState.play) {
 			console.log(`${type} ${i + 1} wins`);
+			instance.state = gameState.finish;
 		}
 	}
 
@@ -26,6 +29,6 @@ export const isWin = field => {
 		diagonal1.push(row[i])
 		diagonal2.push(row[row.length - i - 1])
 	})
-	isAllElementsEquel(diagonal1, 'diagonal', 1)
-	isAllElementsEquel(diagonal2, 'diagonal', 2)
+	isAllElementsEquel(diagonal1, 'diagonal', 0)
+	isAllElementsEquel(diagonal2, 'diagonal', 1)
 }

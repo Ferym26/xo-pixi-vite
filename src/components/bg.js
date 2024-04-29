@@ -8,7 +8,7 @@ export class Bg {
 		this.draw();
 	}
 
-	draw() {
+	async draw() {
 		this.bg.x = 0;
 		this.bg.y = 0
 		this.scene.addChild(this.bg);

@@ -1,108 +1,117 @@
 import { Application, Container, Assets, Sprite, Texture, Graphics } from "pixi.js";
 
-import { Tile } from './conponents/tile.js';
-import { Bg } from './conponents/bg.js';
+import { Tile } from './components/tile.js';
+import { Bg } from './components/bg.js';
+
 import { isWin } from './utils/iswin.js';
+import { tileType, gameState } from './utils/types.js'
+import { assetsLoader } from './utils/assetsLoader.js';
 
 import './styles/style.css';
 
 class XOGame {
 	constructor() {
+		this.app = new Application();
+		this.scene = new Container();
+		this.field = new Container();
+		this.fieldSize = 360;
+		this.fieldBGColor = 0xCCCCCC;
 		this.activePlayer = 'P1'; // 'P2'
+		this.state = gameState.play; // play finish
+		this.model = [
+			['#', '#', '#'],
+			['#', '#', '#'],
+			['#', '#', '#'],
+		];
+		this.fieldData = []; // массив всех плиток
+
+		this.init();
 	}
 
-	start() {
-		// const bg = new Bg();
-	}
-
-	action() {
-
-	}
-}
-
-const xoGame = new XOGame({});
-xoGame.start();
-
-const app = new Application();
-await app.init({
-	width: 360,
-	height: 360,
-	backgroundColor: 0xCCCCCC,
-	antialias: true,
-	// resizeTo: window,
-})
-document.body.appendChild(app.canvas);
-
-const scene = new Container();
-app.stage.addChild(scene);
-
-await Assets.load([
-	'/images/field.png',
-	'/images/cross.png',
-	'/images/circle.png',
-	'/images/empty.png',
-]);
-
-const bg = new Bg({scene});
-
-
-// # o x
-const model = [
-	['#', '#', '#'],
-	['#', '#', '#'],
-	['#', '#', '#'],
-]
-const fieldData = []
-
-
-
-
-
-
-
-
-
-
-
-
-
-let activePlayer = 'P1';
-const changePlayer = () => activePlayer === 'P1' ? activePlayer = 'P2' : activePlayer = 'P1';
-
-
-model.forEach((row, i) => {
-	row.forEach((item, j) => {
-		fieldData.push(
-			new Tile({
-				scene,
-				type: item,
-				x: j * 120,
-				y: i * 120,
-				coordinates: [j, i],
+	resetModel() {
+		this.model.forEach((row, i) => {
+			row.forEach((_, j) => {
+				this.model[j][i] = tileType.empty;
 			})
-		)
-	})
-})
+		});
+	}
 
-scene.children.forEach((item, i) => {
-	item.interactive = true;
-	item.on('pointerdown', (data) => {
+	changePlayer() {
+		this.activePlayer === 'P1' ? this.activePlayer = 'P2' : this.activePlayer = 'P1'
+	}
+
+	async init() {
+		await this.app.init({
+			width: this.fieldSize,
+			height: this.fieldSize,
+			backgroundColor: this.fieldBGColor,
+			antialias: true,
+		})
+		document.body.appendChild(this.app.canvas);
+
+		this.scene.addChild(this.field)
+		this.app.stage.addChild(this.scene);
+
+		assetsLoader.load()
+			.then(() => {
+				this.draw();
+				this.events();
+			})
+			.catch((error) => {
+				console.error(error)
+			});
+	}
+	
+	draw() {
+		new Bg({scene: this.scene});
+
+		this.model.forEach((row, i) => {
+			row.forEach((item, j) => {
+				this.fieldData.push(
+					new Tile({
+						scene: this.field,
+						type: item,
+						x: j * 120,
+						y: i * 120,
+						coordinates: [j, i],
+					})
+				)
+			})
+		})
+	}
+
+	setTileType(data) {
 		const x = data.target.coordinates[0];
 		const y = data.target.coordinates[1];
 		const index = y * 3 + x;
 
-		if (activePlayer === 'P1') {
-			fieldData[index].setType('x');
-			model[x][y] = 'x';
+		// меняем поле только если оно пустое и игра не закончилась
+		if(this.model[x][y] !== tileType.empty || this.state !== gameState.play) {
+			return;
 		}
 
-		if (activePlayer === 'P2') {
-			fieldData[index].setType('o');
-			model[x][y] = 'o';
+		if(this.activePlayer === 'P1') {
+			this.fieldData[index].setType('x');
+			this.model[x][y] = 'x';
 		}
 
-		changePlayer();
-		isWin(model);
-	});
-})
+		if(this.activePlayer === 'P2') {
+			this.fieldData[index].setType('o');
+			this.model[x][y] = 'o';
+		}
 
+		this.changePlayer();
+	}
+
+	events() {
+		this.field.children.forEach((item, i) => {
+			item.interactive = true;
+			item.on('pointerdown', (data) => {
+				this.setTileType(data);
+				isWin(this, this.model);
+			});
+		})
+	}
+}
+
+const xoGame = new XOGame({});
