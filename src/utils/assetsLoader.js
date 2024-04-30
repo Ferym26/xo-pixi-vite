@@ -7,6 +7,7 @@ export class assetsLoader {
 			'/images/cross.png',
 			'/images/circle.png',
 			'/images/empty.png',
+			'/images/btn-restart.png',
 		]);
 	}
 }
