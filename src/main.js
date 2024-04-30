@@ -2,6 +2,7 @@ import { Application, Container, Assets, Sprite, Texture, Graphics } from "pixi.
 
 import { Tile } from './components/tile.js';
 import { Bg } from './components/bg.js';
+import { UI } from './components/ui.js';
 
 import { isWin } from './utils/iswin.js';
 import { tileType, gameState } from './utils/types.js'
@@ -64,6 +65,10 @@ class XOGame {
 	
 	draw() {
 		new Bg({scene: this.scene});
+		new UI({
+			scene: this.scene,
+			size: this.fieldSize,
+		});
 
 		this.model.forEach((row, i) => {
 			row.forEach((item, j) => {

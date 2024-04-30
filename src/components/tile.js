@@ -8,7 +8,7 @@ export class Tile {
 		this.y = opt.y;
 		this.type = opt.type;
 		this.tile = new Container();
-		this.rect = new Graphics()
+		this.rect = new Graphics();
 		this.icon = new Sprite(Texture.from('/images/empty.png'));
 		this.tile.coordinates = opt.coordinates;
 
