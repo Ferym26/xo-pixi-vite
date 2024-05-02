@@ -10,6 +10,62 @@ import { assetsLoader } from './utils/assetsLoader.js';
 
 import './styles/style.css';
 
+
+class XOGameModel {
+	constructor() {
+		this.fieldSize = 360;
+		this.fieldBGColor = '#ccc';
+	}
+}
+
+class XOGameView {
+	constructor(opt) {
+		this.model = opt.model;
+		this.app = new Application();
+	}
+
+	async initView() {
+		await this.app.init({
+			width: this.model.fieldSize,
+			height: this.model.fieldSize,
+			backgroundColor: this.model.fieldBGColor,
+			antialias: true,
+		})
+		document.body.appendChild(this.app.canvas);
+	}
+}
+
+class XOGameController {
+	constructor(opt) {
+		this.model = opt.model;
+		this.view = opt.view;
+	}
+
+	events() {
+
+	}
+
+	init() {
+		this.view.initView();
+	}
+}
+
+const model = new XOGameModel()
+const view = new XOGameView({model})
+const controller = new XOGameController({model, view});
+
+controller.init();
+
+
+
+
+
+
+
+
+
+
+
 class XOGame {
 	constructor() {
 		this.app = new Application();
@@ -65,11 +121,11 @@ class XOGame {
 	
 	draw() {
 		new Bg({scene: this.scene});
-		new UI({
-			instance: this,
-			scene: this.scene,
-			size: this.fieldSize,
-		});
+		// new UI({
+		// 	instance: this,
+		// 	scene: this.scene,
+		// 	size: this.fieldSize,
+		// });
 
 		this.model.forEach((row, i) => {
 			row.forEach((item, j) => {
@@ -125,4 +181,4 @@ class XOGame {
 	}
 }
 
-const xoGame = new XOGame({});
+// const xoGame = new XOGame({});
