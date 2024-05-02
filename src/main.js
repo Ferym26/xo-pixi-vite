@@ -15,13 +15,25 @@ class XOGameModel {
 	constructor() {
 		this.fieldSize = 360;
 		this.fieldBGColor = '#ccc';
+
+		this.activePlayer = playerType.P1; // playerType.P2
+		this.state = gameState.play; // play finish
+		this.matrix = [
+			['#', '#', '#'],
+			['#', '#', '#'],
+			['#', '#', '#'],
+		];
+		this.fieldData = []; // массив всех плиток
 	}
 }
 
 class XOGameView {
 	constructor(opt) {
 		this.model = opt.model;
+		this.controller = opt.controller;
 		this.app = new Application();
+		this.scene = new Container();
+		this.field = new Container();
 	}
 
 	async initView() {
@@ -32,6 +44,38 @@ class XOGameView {
 			antialias: true,
 		})
 		document.body.appendChild(this.app.canvas);
+
+		this.scene.addChild(this.field)
+		this.app.stage.addChild(this.scene);
+
+		assetsLoader.load()
+			.then(() => {
+				this.drowBg();
+				this.drowTiles();
+			})
+			.catch((error) => {
+				console.error(error);
+			});
+	}
+
+	drowBg() {
+		new Bg({scene: this.scene});
+	}
+
+	drowTiles() {
+		this.model.matrix.forEach((row, i) => {
+			row.forEach((item, j) => {
+				this.model.fieldData.push(
+					new Tile({
+						scene: this.field,
+						type: item,
+						x: j * 120,
+						y: i * 120,
+						coordinates: [j, i],
+					})
+				)
+			})
+		});
 	}
 }
 
@@ -42,7 +86,15 @@ class XOGameController {
 	}
 
 	events() {
-
+		console.log('events');
+		this.view.field.children.forEach((item, i) => {
+			item.interactive = true;
+			item.on('pointerdown', (data) => {
+				// this.setTileType(data);
+				// isWin(this, this.model);
+				console.log('click');
+			});
+		})
 	}
 
 	init() {
@@ -50,8 +102,8 @@ class XOGameController {
 	}
 }
 
-const model = new XOGameModel()
-const view = new XOGameView({model})
+const model = new XOGameModel();
+const view = new XOGameView({model});
 const controller = new XOGameController({model, view});
 
 controller.init();
