@@ -5,7 +5,7 @@ import { Bg } from './components/bg.js';
 import { UI } from './components/ui.js';
 
 import { isWin } from './utils/iswin.js';
-import { tileType, gameState } from './utils/types.js'
+import { tileType, gameState, playerType } from './utils/types.js'
 import { assetsLoader } from './utils/assetsLoader.js';
 
 import './styles/style.css';
@@ -17,7 +17,7 @@ class XOGame {
 		this.field = new Container();
 		this.fieldSize = 360;
 		this.fieldBGColor = 0xCCCCCC;
-		this.activePlayer = 'P1'; // 'P2'
+		this.activePlayer = playerType.P1; // playerType.P2
 		this.state = gameState.play; // play finish
 		this.model = [
 			['#', '#', '#'],
@@ -38,7 +38,7 @@ class XOGame {
 	}
 
 	changePlayer() {
-		this.activePlayer === 'P1' ? this.activePlayer = 'P2' : this.activePlayer = 'P1'
+		this.activePlayer === playerType.P1 ? this.activePlayer = playerType.P2 : this.activePlayer = playerType.P1
 	}
 
 	async init() {
@@ -66,6 +66,7 @@ class XOGame {
 	draw() {
 		new Bg({scene: this.scene});
 		new UI({
+			instance: this,
 			scene: this.scene,
 			size: this.fieldSize,
 		});
@@ -95,17 +96,22 @@ class XOGame {
 			return;
 		}
 
-		if(this.activePlayer === 'P1') {
+		if(this.activePlayer === playerType.P1) {
 			this.fieldData[index].setType('x');
 			this.model[x][y] = 'x';
 		}
 
-		if(this.activePlayer === 'P2') {
+		if(this.activePlayer === playerType.P2) {
 			this.fieldData[index].setType('o');
 			this.model[x][y] = 'o';
 		}
 
 		this.changePlayer();
+	}
+
+	restartGame() {
+		this.resetModel();
+		this.state = gameState.play;
 	}
 
 	events() {

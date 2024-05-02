@@ -8,3 +8,8 @@ export const gameState = {
 	play: 'play',
 	finish: 'finish',
 }
+
+export const playerType = {
+	P1: 'P1',
+	P2: 'P2',
+}
