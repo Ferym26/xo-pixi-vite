@@ -2,6 +2,7 @@ import { Container, Sprite, Texture, Graphics } from "pixi.js";
 
 export class Tile {
 	constructor(opt) {
+		this.model = opt.model;
 		this.scene = opt.scene;
 		this.size = 120;
 		this.x = opt.x;
@@ -14,6 +15,7 @@ export class Tile {
 
 		this.setType(this.type)
 		this.drow();
+		this.events();
 	}
 
 	drow() {
@@ -46,5 +48,12 @@ export class Tile {
 		if(type === 'o') {
 			this.icon.texture = Texture.from('/images/circle.png');
 		}
+	}
+
+	events() {
+		this.tile.interactive = true;
+		this.tile.on('pointerdown', (data) => {
+			this.model.setTileType(data);
+		});
 	}
 }

@@ -4,7 +4,7 @@ import { playerType } from '../utils/types.js';
 
 export class UI {
 	constructor(opt) {
-		this.instance = opt.instance;
+		this.model = opt.model;
 		this.scene = opt.scene;
 		this.size = opt.size;
 		
@@ -56,7 +56,7 @@ export class UI {
 
 	events() {
 		this.button.on('pointerdown', (data) => {
-			this.instance.restartGame();
+			this.model.restartGame();
 			this.hideUI();
 		});
 	}
