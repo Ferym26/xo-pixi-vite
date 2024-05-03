@@ -9,17 +9,19 @@ export class UI {
 		this.size = opt.size;
 		
 		this.ui = new Container();
+		this.ui.visible = false;
 		this.button = new Sprite(Texture.from('/images/btn-restart.png'));
 
 		this.scene.addChild(this.ui);
 		this.drawBackdrop();
-		this.drowRestartBtn();
-		this.drowWinnerTitle(playerType.P1);
+		this.drawRestartBtn();
+		
 
 		this.events();
 	}
 
-	showUI() {
+	showUI(data) {
+		this.drawTitle(data.title);
 		this.ui.visible = true;
 	}
 
@@ -38,7 +40,7 @@ export class UI {
 		this.ui.addChild(this.bg);
 	}
 
-	drowRestartBtn() {
+	drawRestartBtn() {
 		this.button.interactive = true;
 		this.button.x = this.scene.width / 2;
 		this.button.y = this.scene.height / 2 + 50;
@@ -46,12 +48,24 @@ export class UI {
 		this.ui.addChild(this.button);
 	}
 
-	drowWinnerTitle(player) {
-		this.winner = new Sprite(Texture.from(`/images/winner-${player === playerType.P1 ? 'x' : 'o'}.png`));
-		this.winner.x = this.scene.width / 2;
-		this.winner.y = this.scene.height / 2 - 100;
-		this.winner.anchor.set(0.5);
-		this.ui.addChild(this.winner);
+	drawTitle(result) {
+		const titleImage = () => {
+			switch (result) {
+				case playerType.P1:
+					return 'winner-x.png';
+				case playerType.P2:
+					return 'winner-0.png';
+				case 'draw':
+					return 'draw.png';
+				default:
+					return 'draw.png';
+			}
+		}
+		this.title = new Sprite(Texture.from(`/images/${titleImage()}`));
+		this.title.x = this.scene.width / 2;
+		this.title.y = this.scene.height / 2 - 100;
+		this.title.anchor.set(0.5);
+		this.ui.addChild(this.title);
 	}
 
 	events() {

@@ -39,7 +39,9 @@ class XOGameModel {
 		}
 		
 		if(this.step === 9) {
-			console.log('ничья');
+			// UI.showUI({
+			// 	title: 'draw',
+			// });
 		}
 
 		if(this.activePlayer === playerType.P1) {
@@ -81,6 +83,7 @@ class XOGameView {
 		this.app = new Application();
 		this.scene = new Container();
 		this.field = new Container();
+		this.ui = null;
 	}
 
 	async initView() {
@@ -99,7 +102,7 @@ class XOGameView {
 			.then(() => {
 				this.drowBg();
 				this.drowTiles();
-				this.drawUI();
+				this.drawUI('draw');
 			})
 			.catch((error) => {
 				console.error(error);
@@ -127,11 +130,11 @@ class XOGameView {
 		});
 	}
 
-	drawUI() {
+	drawUI(title) {
 		new UI({
 			model,
 			scene: this.scene,
-			size: this.fieldSize,
+			size: this.model.fieldSize,
 		});
 	}
 }

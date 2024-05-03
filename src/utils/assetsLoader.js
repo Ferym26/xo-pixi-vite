@@ -8,6 +8,7 @@ const assets = [
 	'/images/btn-restart.png',
 	'/images/winner-o.png',
 	'/images/winner-x.png',
+	'/images/draw.png',
 ];
 
 export class assetsLoader {
