@@ -37,11 +37,9 @@ class XOGameModel {
 		if(this.matrix[x][y] !== tileType.empty || this.state !== gameState.play) {
 			return;
 		}
-		
+
 		if(this.step === 9) {
-			// UI.showUI({
-			// 	title: 'draw',
-			// });
+			//
 		}
 
 		if(this.activePlayer === playerType.P1) {
@@ -54,9 +52,8 @@ class XOGameModel {
 			this.matrix[x][y] = 'o';
 		}
 
-		
 		this.changePlayer();
-		isWin(this, this.matrix);
+		isWin(this);
 	}
 
 	resetModel() {
@@ -102,7 +99,7 @@ class XOGameView {
 			.then(() => {
 				this.drowBg();
 				this.drowTiles();
-				this.drawUI('draw');
+				this.drawUI();
 			})
 			.catch((error) => {
 				console.error(error);
@@ -130,12 +127,14 @@ class XOGameView {
 		});
 	}
 
-	drawUI(title) {
-		new UI({
+	drawUI() {
+		this.ui = new UI({
 			model,
 			scene: this.scene,
 			size: this.model.fieldSize,
 		});
+
+		// this.ui.showUI({title: 'P2'});
 	}
 }
 

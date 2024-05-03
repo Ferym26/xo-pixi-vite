@@ -54,7 +54,7 @@ export class UI {
 				case playerType.P1:
 					return 'winner-x.png';
 				case playerType.P2:
-					return 'winner-0.png';
+					return 'winner-o.png';
 				case 'draw':
 					return 'draw.png';
 				default:
