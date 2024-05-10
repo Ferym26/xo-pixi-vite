@@ -4,7 +4,6 @@ import { Tile } from './components/tile.js';
 import { Bg } from './components/bg.js';
 import { UI } from './components/ui.js';
 
-import { isWin } from './utils/iswin.js';
 import { tileType, gameState, playerType } from './utils/types.js'
 import { assetsLoader } from './utils/assetsLoader.js';
 
@@ -13,6 +12,11 @@ import './styles/style.css';
 
 class XOGameModel {
 	constructor() {
+		this.app = new Application();
+		this.scene = new Container();
+		this.field = new Container();
+		this.ui = null;
+
 		this.fieldSize = 360;
 		this.fieldBGColor = '#ccc';
 
@@ -27,6 +31,19 @@ class XOGameModel {
 		this.step = 0;
 	}
 
+	async initView() {
+		await this.app.init({
+			width: this.fieldSize,
+			height: this.fieldSize,
+			backgroundColor: this.fieldBGColor,
+			antialias: true,
+		})
+		document.body.appendChild(this.app.canvas);
+
+		this.scene.addChild(this.field)
+		this.app.stage.addChild(this.scene);
+	}
+
 	setTileType(data) {
 		const x = data.target.coordinates[0];
 		const y = data.target.coordinates[1];
@@ -39,7 +56,7 @@ class XOGameModel {
 		}
 
 		if(this.step === 9) {
-			//
+			this.showUI({title: 'draw'});
 		}
 
 		if(this.activePlayer === playerType.P1) {
@@ -52,58 +69,62 @@ class XOGameModel {
 			this.matrix[x][y] = 'o';
 		}
 
+		this.isWin();
 		this.changePlayer();
-		isWin(this);
 	}
 
 	resetModel() {
 		this.matrix.forEach((row, i) => {
 			row.forEach((_, j) => {
 				this.matrix[j][i] = tileType.empty;
+				this.fieldData[j * 3 + i].setType('#');
 			})
 		});
 	}
 
 	restartGame() {
+		this.step = 0;
 		this.resetModel();
 		this.state = gameState.play;
+		
 	}
 
 	changePlayer() {
 		this.activePlayer === playerType.P1 ? this.activePlayer = playerType.P2 : this.activePlayer = playerType.P1
 	}
-}
 
-class XOGameView {
-	constructor(opt) {
-		this.model = opt.model;
-		this.app = new Application();
-		this.scene = new Container();
-		this.field = new Container();
-		this.ui = null;
-	}
-
-	async initView() {
-		await this.app.init({
-			width: this.model.fieldSize,
-			height: this.model.fieldSize,
-			backgroundColor: this.model.fieldBGColor,
-			antialias: true,
+	isWin() {
+		const isAllElementsEquel = (arr, type, i) => {
+			if(arr.every(item => item !== '#' && item === arr[0]) && this.state === gameState.play) {
+				console.log(`${type} ${i + 1} wins`);
+				this.state = gameState.finish;
+				this.showUI({title: this.activePlayer});
+			}
+		}
+	
+		// rows
+		this.matrix.forEach((row, i) => {
+			isAllElementsEquel(row, 'row', i)
 		})
-		document.body.appendChild(this.app.canvas);
-
-		this.scene.addChild(this.field)
-		this.app.stage.addChild(this.scene);
-
-		assetsLoader.load()
-			.then(() => {
-				this.drowBg();
-				this.drowTiles();
-				this.drawUI();
-			})
-			.catch((error) => {
-				console.error(error);
-			});
+	
+		// cols
+		for (let j = 0; j < this.matrix.length; j++) {
+			let col = [];
+			for (let i = 0; i < this.matrix.length; i++) {
+				col.push(this.matrix[i][j])
+			}
+			isAllElementsEquel(col, 'col', j)
+		}
+	
+		//diagonals
+		let diagonal1 = []
+		let diagonal2 = []
+		this.matrix.forEach((row, i) => {
+			diagonal1.push(row[i])
+			diagonal2.push(row[row.length - i - 1])
+		})
+		isAllElementsEquel(diagonal1, 'diagonal', 0)
+		isAllElementsEquel(diagonal2, 'diagonal', 1)
 	}
 
 	drowBg() {
@@ -111,11 +132,12 @@ class XOGameView {
 	}
 
 	drowTiles() {
-		this.model.matrix.forEach((row, i) => {
+		this.fieldData = [];
+		this.matrix.forEach((row, i) => {
 			row.forEach((item, j) => {
-				this.model.fieldData.push(
+				this.fieldData.push(
 					new Tile({
-						model,
+						model: this,
 						scene: this.field,
 						type: item,
 						x: j * 120,
@@ -129,12 +151,20 @@ class XOGameView {
 
 	drawUI() {
 		this.ui = new UI({
-			model,
+			model: this,
 			scene: this.scene,
-			size: this.model.fieldSize,
+			size: this.fieldSize,
 		});
+	}
 
-		// this.ui.showUI({title: 'P2'});
+	showUI(data) {
+		this.ui.showUI({title: data.title});
+	}
+}
+
+class XOGameView {
+	constructor(opt) {
+
 	}
 }
 
@@ -144,8 +174,21 @@ class XOGameController {
 		this.view = opt.view;
 	}
 
+	draw() {
+		assetsLoader.load()
+			.then(() => {
+				this.model.drowBg();
+				this.model.drowTiles();
+				this.model.drawUI();
+			})
+			.catch((error) => {
+				console.error(error);
+			});
+	}
+
 	init() {
-		this.view.initView();
+		this.model.initView();
+		this.draw();
 	}
 }
 
