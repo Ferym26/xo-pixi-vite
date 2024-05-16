@@ -29,6 +29,10 @@ class XOGameModel {
 		];
 		this.fieldData = []; // массив всех плиток
 		this.step = 0;
+		this.playerSequence = {
+			P1: [],
+			P2: [],
+		}
 	}
 
 	async initView() {
