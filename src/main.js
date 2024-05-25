@@ -22,17 +22,37 @@ class XOGameModel {
 
 		this.activePlayer = playerType.P1; // playerType.P2
 		this.state = gameState.play; // play finish
-		this.matrix = [
+		this.matrix = this.createMatrixProxy([
 			['#', '#', '#'],
 			['#', '#', '#'],
 			['#', '#', '#'],
-		];
-		this.fieldData = []; // массив всех плиток
-		this.step = 0;
-		this.playerSequence = {
+		]);
+		this.playerSteps = {
 			P1: [],
 			P2: [],
 		}
+		this.step = 0;
+	}
+
+	createMatrixProxy(matrix) {
+		const self = this;
+		function createHandler() {
+			return {
+				set(target, property, value) {
+					target[property] = value;
+					self.onMatrixChange(); // Вызов метода уведомления
+					return true;
+				}
+			};
+		}
+		for (let i = 0; i < matrix.length; i++) {
+			matrix[i] = new Proxy(matrix[i], createHandler());
+		}
+		return new Proxy(matrix, createHandler());
+	}
+
+	onMatrixChange() {
+		this.updateField();
 	}
 
 	async initView() {
@@ -48,10 +68,9 @@ class XOGameModel {
 		this.app.stage.addChild(this.scene);
 	}
 
-	setTileType(data) {
-		const x = data.target.coordinates[0];
-		const y = data.target.coordinates[1];
-		const index = y * 3 + x;
+	setTileType(coords) {
+		const x = coords[1];
+		const y = coords[0];
 		this.step++;
 
 		// меняем поле только если оно пустое и игра не закончилась
@@ -59,38 +78,47 @@ class XOGameModel {
 			return;
 		}
 
-		if(this.step === 9) {
-			this.showUI({title: 'draw'});
-		}
-
 		if(this.activePlayer === playerType.P1) {
-			this.fieldData[index].setType('x');
 			this.matrix[x][y] = 'x';
 		}
 
 		if(this.activePlayer === playerType.P2) {
-			this.fieldData[index].setType('o');
 			this.matrix[x][y] = 'o';
 		}
 
+		this.stepper(this.activePlayer, coords);
 		this.isWin();
 		this.changePlayer();
+	}
+
+	stepper(player, coordsArr) {
+		const coordFirstStep = this.playerSteps[player][0];
+		this.playerSteps[player].push(coordsArr);
+		if(this.playerSteps[player].length > 3) {
+			this.playerSteps[player].push(coordsArr);
+			this.matrix[coordFirstStep[1]][coordFirstStep[0]] = '#';
+			this.playerSteps[player].shift();
+		}
+
+		// подсвечивать клетку которая должна будет исчезнуть после сл хода
+		if(this.playerSteps[player].length === 3) {
+			// this.highlightLast(coordFirstStep);
+		}
 	}
 
 	resetModel() {
 		this.matrix.forEach((row, i) => {
 			row.forEach((_, j) => {
 				this.matrix[j][i] = tileType.empty;
-				this.fieldData[j * 3 + i].setType('#');
 			})
 		});
 	}
 
 	restartGame() {
 		this.step = 0;
-		this.resetModel();
 		this.state = gameState.play;
-		
+		this.activePlayer = playerType.P1;
+		this.resetModel();
 	}
 
 	changePlayer() {
@@ -136,21 +164,40 @@ class XOGameModel {
 	}
 
 	drowTiles() {
-		this.fieldData = [];
 		this.matrix.forEach((row, i) => {
 			row.forEach((item, j) => {
-				this.fieldData.push(
-					new Tile({
-						model: this,
-						scene: this.field,
-						type: item,
-						x: j * 120,
-						y: i * 120,
-						coordinates: [j, i],
-					})
-				)
+				new Tile({
+					model: this,
+					scene: this.field,
+					type: item,
+					x: j * 120,
+					y: i * 120,
+					coordinates: [j, i],
+				})
 			})
 		});
+	}
+
+	updateField() {
+		this.matrix.forEach((row, i) => {
+			row.forEach((item, j) => {
+				const index = i * 3 + j;
+				if(item === '#') {
+					this.field.children[index].children[0].texture = Texture.from('/images/empty.png');
+				}
+				if(item === 'x') {
+					this.field.children[index].children[0].texture = Texture.from('/images/cross.png');
+				}
+				if(item === 'o') {
+					this.field.children[index].children[0].texture = Texture.from('/images/circle.png');
+				}
+			})
+		});
+	}
+
+	highlightLast(coords) {
+		const index = coords[1] * 3 + coords[0];
+		this.field.children[index].children[0].scale.set(0.8);
 	}
 
 	drawUI() {
@@ -164,11 +211,14 @@ class XOGameModel {
 	showUI(data) {
 		this.ui.showUI({title: data.title});
 	}
-}
 
-class XOGameView {
-	constructor(opt) {
-
+	events() {
+		this.field.children.forEach(field => {
+			field.interactive = true;
+			field.on('pointerdown', event => {
+				this.setTileType(event.currentTarget.coordinates);
+			});
+		})
 	}
 }
 
@@ -184,6 +234,8 @@ class XOGameController {
 				this.model.drowBg();
 				this.model.drowTiles();
 				this.model.drawUI();
+
+				this.model.events();
 			})
 			.catch((error) => {
 				console.error(error);
@@ -197,7 +249,6 @@ class XOGameController {
 }
 
 const model = new XOGameModel();
-const view = new XOGameView({model});
-const controller = new XOGameController({model, view});
+const controller = new XOGameController({model});
 
 controller.init();
