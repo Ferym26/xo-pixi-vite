@@ -7,6 +7,8 @@ import { UI } from './components/ui.js';
 import { tileType, gameState, playerType } from './utils/types.js'
 import { assetsLoader } from './utils/assetsLoader.js';
 
+import { WsService } from './services/ws.service.js';
+
 import './styles/style.css';
 
 
@@ -22,6 +24,7 @@ class XOGameModel {
 
 		this.activePlayer = playerType.P1; // playerType.P2
 		this.state = gameState.play; // play finish
+
 		this.matrix = this.createMatrixProxy([
 			['#', '#', '#'],
 			['#', '#', '#'],
@@ -32,6 +35,22 @@ class XOGameModel {
 			P2: [],
 		}
 		this.step = 0;
+
+		this.wsService = new WsService();
+		this.wsService.on('dataReceived', this.updateMatrix.bind(this));
+	}
+
+	updateMatrix(data) {
+		console.log('data', data);
+		this.matrix[0][0] = data[0][0];
+		this.matrix[0][1] = data[0][1];
+		this.matrix[0][2] = data[0][1];
+		this.matrix[1][0] = data[1][0];
+		this.matrix[1][1] = data[1][1];
+		this.matrix[1][2] = data[1][2];
+		this.matrix[2][0] = data[2][0];
+		this.matrix[2][1] = data[2][1];
+		this.matrix[2][2] = data[2][2];
 	}
 
 	createMatrixProxy(matrix) {
@@ -217,6 +236,7 @@ class XOGameModel {
 			field.interactive = true;
 			field.on('pointerdown', event => {
 				this.setTileType(event.currentTarget.coordinates);
+				this.wsService.sendData(this.matrix);
 			});
 		})
 	}
@@ -231,6 +251,7 @@ class XOGameController {
 	draw() {
 		assetsLoader.load()
 			.then(() => {
+				// this.model.bd.getData();
 				this.model.drowBg();
 				this.model.drowTiles();
 				this.model.drawUI();
