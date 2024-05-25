@@ -19,6 +19,7 @@ class XOGameModel {
 
 		this.fieldSize = 360;
 		this.fieldBGColor = '#ccc';
+		this.tileArr = [];
 
 		this.activePlayer = playerType.P1; // playerType.P2
 		this.state = gameState.play; // play finish
@@ -34,6 +35,7 @@ class XOGameModel {
 		this.step = 0;
 	}
 
+	// создание прокси для отслеживания изменений в матрице
 	createMatrixProxy(matrix) {
 		const self = this;
 		function createHandler() {
@@ -94,15 +96,19 @@ class XOGameModel {
 	stepper(player, coordsArr) {
 		const coordFirstStep = this.playerSteps[player][0];
 		this.playerSteps[player].push(coordsArr);
+
 		if(this.playerSteps[player].length > 3) {
-			this.playerSteps[player].push(coordsArr);
-			this.matrix[coordFirstStep[1]][coordFirstStep[0]] = '#';
+			const index = coordFirstStep[1] * 3 + coordFirstStep[0];
+			this.matrix[coordFirstStep[1]][coordFirstStep[0]] = tileType.empty;
+			// this.tileArr[index].setDefaultView();
 			this.playerSteps[player].shift();
 		}
 
-		// подсвечивать клетку которая должна будет исчезнуть после сл хода
-		if(this.playerSteps[player].length === 3) {
-			// this.highlightLast(coordFirstStep);
+		// TODO: подсвечивать клетку которая должна будет исчезнуть после сл хода
+		// console.log(this.playerSteps[player]);
+		if(this.playerSteps[player].length >= 3) {
+			const index = coordFirstStep[1] * 3 + coordFirstStep[0];
+			// this.highlightLast(index);
 		}
 	}
 
@@ -166,14 +172,16 @@ class XOGameModel {
 	drowTiles() {
 		this.matrix.forEach((row, i) => {
 			row.forEach((item, j) => {
-				new Tile({
-					model: this,
-					scene: this.field,
-					type: item,
-					x: j * 120,
-					y: i * 120,
-					coordinates: [j, i],
-				})
+				this.tileArr.push(
+					new Tile({
+						model: this,
+						scene: this.field,
+						type: item,
+						x: j * 120,
+						y: i * 120,
+						coordinates: [j, i],
+					})
+				);
 			})
 		});
 	}
@@ -182,22 +190,13 @@ class XOGameModel {
 		this.matrix.forEach((row, i) => {
 			row.forEach((item, j) => {
 				const index = i * 3 + j;
-				if(item === '#') {
-					this.field.children[index].children[0].texture = Texture.from('/images/empty.png');
-				}
-				if(item === 'x') {
-					this.field.children[index].children[0].texture = Texture.from('/images/cross.png');
-				}
-				if(item === 'o') {
-					this.field.children[index].children[0].texture = Texture.from('/images/circle.png');
-				}
+				this.tileArr[index].setType(item);
 			})
 		});
 	}
 
-	highlightLast(coords) {
-		const index = coords[1] * 3 + coords[0];
-		this.field.children[index].children[0].scale.set(0.8);
+	highlightLast(index) {
+		this.tileArr[index].setPreHiddenView();
 	}
 
 	drawUI() {

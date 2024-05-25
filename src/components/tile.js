@@ -48,4 +48,12 @@ export class Tile {
 			this.icon.texture = Texture.from('/images/circle.png');
 		}
 	}
+
+	setPreHiddenView() {
+		this.icon.alpha = 0.55;
+	}
+
+	setDefaultView() {
+		this.icon.alpha = 1;
+	}
 }
