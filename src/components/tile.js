@@ -12,6 +12,7 @@ export class Tile {
 		this.rect = new Graphics();
 		this.icon = new Sprite(Texture.from('/images/empty.png'));
 		this.tile.coordinates = opt.coordinates;
+		this.tile.isHighlighted = false;
 
 		this.setType(this.type)
 		this.drow();

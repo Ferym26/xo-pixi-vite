@@ -94,21 +94,28 @@ class XOGameModel {
 	}
 
 	stepper(player, coordsArr) {
-		const coordFirstStep = this.playerSteps[player][0];
-		this.playerSteps[player].push(coordsArr);
+		let highIndex = null;
 
-		if(this.playerSteps[player].length > 3) {
+		if(this.playerSteps[player].length === 3) {
+			const coordFirstStep = this.playerSteps[player][0];
 			const index = coordFirstStep[1] * 3 + coordFirstStep[0];
-			this.matrix[coordFirstStep[1]][coordFirstStep[0]] = tileType.empty;
-			// this.tileArr[index].setDefaultView();
+			highIndex = index;
 			this.playerSteps[player].shift();
+			this.playerSteps[player].push(coordsArr);
+			this.matrix[coordFirstStep[1]][coordFirstStep[0]] = tileType.empty;
+			if (highIndex === index) {
+				this.tileArr[index].setDefaultView();
+			}
+		} else {
+			this.playerSteps[player].push(coordsArr);
 		}
 
-		// TODO: подсвечивать клетку которая должна будет исчезнуть после сл хода
-		// console.log(this.playerSteps[player]);
-		if(this.playerSteps[player].length >= 3) {
+		if(this.playerSteps[player].length === 3) {
+			const coordFirstStep = this.playerSteps[player][0];
 			const index = coordFirstStep[1] * 3 + coordFirstStep[0];
-			// this.highlightLast(index);
+			if (highIndex != index) {
+				this.highlightLast(index);
+			}
 		}
 	}
 
