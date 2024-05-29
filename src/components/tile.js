@@ -12,6 +12,7 @@ export class Tile {
 		this.rect = new Graphics();
 		this.icon = new Sprite(Texture.from('/images/empty.png'));
 		this.tile.coordinates = opt.coordinates;
+		this.tile.isHighlighted = false;
 
 		this.setType(this.type)
 		this.drow();
@@ -47,5 +48,13 @@ export class Tile {
 		if(type === 'o') {
 			this.icon.texture = Texture.from('/images/circle.png');
 		}
+	}
+
+	setPreHiddenView() {
+		this.icon.alpha = 0.55;
+	}
+
+	setDefaultView() {
+		this.icon.alpha = 1;
 	}
 }
