@@ -6,7 +6,7 @@ export class WsService extends EventEmitter {
 		this.socket = new WebSocket('ws://localhost:8080');
 
 		this.socket.addEventListener('open', () => {
-			console.log('Connected to the WebSocket server');
+			// console.log('Connected to the WebSocket server');
 		});
 
 		this.socket.addEventListener('message', (event) => {
@@ -17,7 +17,7 @@ export class WsService extends EventEmitter {
 	}
 
 	sendData(matrix) {
-		console.log('send');
+		console.log('send', matrix);
 		this.socket.send(JSON.stringify(matrix));
 	}
 }

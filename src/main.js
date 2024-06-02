@@ -43,6 +43,7 @@ class XOGameModel {
 
 	updateMatrix(data) {
 		console.log('data', data);
+		console.log('tiles', this.tileArr);
 		this.matrix[0][0] = data[0][0];
 		this.matrix[0][1] = data[0][1];
 		this.matrix[0][2] = data[0][1];
@@ -154,6 +155,7 @@ class XOGameModel {
 	}
 
 	changePlayer() {
+		console.log(this.activePlayer);
 		this.activePlayer === playerType.P1 ? this.activePlayer = playerType.P2 : this.activePlayer = playerType.P1
 	}
 
@@ -216,7 +218,9 @@ class XOGameModel {
 		this.matrix.forEach((row, i) => {
 			row.forEach((item, j) => {
 				const index = i * 3 + j;
-				this.tileArr[index].setType(item);
+				if(this.tileArr.length) {
+					this.tileArr[index].setType(item);
+				}
 			})
 		});
 	}
@@ -246,36 +250,24 @@ class XOGameModel {
 			});
 		})
 	}
-}
 
-class XOGameController {
-	constructor(opt) {
-		this.model = opt.model;
-		this.view = opt.view;
-	}
+	init() {
+		this.initView();
 
-	draw() {
 		assetsLoader.load()
 			.then(() => {
 				// this.model.bd.getData();
-				this.model.drowBg();
-				this.model.drowTiles();
-				this.model.drawUI();
+				this.drowBg();
+				this.drowTiles();
+				this.drawUI();
 
-				this.model.events();
+				this.events();
 			})
 			.catch((error) => {
 				console.error(error);
 			});
 	}
-
-	init() {
-		this.model.initView();
-		this.draw();
-	}
 }
 
 const model = new XOGameModel();
-const controller = new XOGameController({model});
-
-controller.init();
+model.init()
